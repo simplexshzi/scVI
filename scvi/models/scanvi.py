@@ -135,7 +135,7 @@ class SCANVI(AbstractModelClass):
                 [10, np.max([2, round(n_epochs_unsupervised / 3.0)])]
             )
 
-        self.trainer = UnsupervisedTrainer(
+        self._unsupervised_trainer = UnsupervisedTrainer(
             self._model_scvi,
             self.adata,
             train_size=train_size,
@@ -150,17 +150,17 @@ class SCANVI(AbstractModelClass):
 
         self.model.load_state_dict(self.trainer.model.state_dict(), strict=False)
 
-        trainer_scanvi = SemiSupervisedTrainer(self.model, self.adata)
+        self.trainer = SemiSupervisedTrainer(self.model, self.adata)
         unlabeled_indices = None
         labeled_indices = None
 
-        trainer_scanvi.unlabelled_set = trainer_scanvi.create_posterior(
+        self.trainer.unlabelled_set = self.trainer.create_posterior(
             indices=unlabeled_indices
         )
-        trainer_scanvi.labelled_set = trainer_scanvi.create_posterior(
+        self.trainer.labelled_set = self.trainer.create_posterior(
             indices=labeled_indices
         )
-        trainer_scanvi.train(n_epochs=n_epochs_semisupervised)
+        self.trainer.train(n_epochs=n_epochs_semisupervised)
 
         self.is_trained = True
         self.train_indices = self.trainer.train_set.indices
