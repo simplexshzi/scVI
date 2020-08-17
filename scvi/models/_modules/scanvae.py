@@ -4,7 +4,7 @@ import torch
 from typing import Sequence
 from torch.distributions import Normal, Categorical, kl_divergence as kl
 from scvi.models._modules.classifier import Classifier
-from scvi.models._modules._base import Decoder, Encoder
+from scvi.models._modules._core import Decoder, Encoder
 from scvi.models._modules.utils import broadcast_labels
 from scvi.models._modules.vae import VAE
 
