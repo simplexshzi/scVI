@@ -168,6 +168,16 @@ class SCANVI(AbstractModelClass):
         self.validation_indices = self.trainer.validation_set.indices
 
     def predict(self, adata=None, indices=None, soft=False):
+        """Compute cell label predictions
+
+        adata
+            AnnData object that has been registered with scvi. If `None`, defaults to the
+            AnnData object used to initialize the model.
+        indices
+            Indices of cells in adata to use. If `None`, all cells are used.
+        soft
+            TODO
+        """
 
         post = self._make_posterior(adata=adata, indices=indices)
 
