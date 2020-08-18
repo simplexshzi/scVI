@@ -151,7 +151,7 @@ class SCANVI(SCVI):
             )
 
         self._unsupervised_trainer = UnsupervisedTrainer(
-            self._model_scvi,
+            self._scvi_model,
             self.adata,
             train_size=train_size,
             test_size=test_size,
