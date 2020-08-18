@@ -165,7 +165,9 @@ class SCANVI(SCVI):
             n_epochs=n_epochs_unsupervised, lr=lr, **train_kwargs
         )
 
-        self.model.load_state_dict(self.trainer.model.state_dict(), strict=False)
+        self.model.load_state_dict(
+            self._unsupervised_trainer.model.state_dict(), strict=False
+        )
 
         self.trainer = SemiSupervisedTrainer(self.model, self.adata)
 
