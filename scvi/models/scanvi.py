@@ -161,7 +161,9 @@ class SCANVI(SCVI):
             use_cuda=self.use_cuda,
             **unsupervised_trainer_kwargs,
         )
-        self.trainer.train(n_epochs=n_epochs_unsupervised, lr=lr, **train_kwargs)
+        self._unsupervised_trainer.train(
+            n_epochs=n_epochs_unsupervised, lr=lr, **train_kwargs
+        )
 
         self.model.load_state_dict(self.trainer.model.state_dict(), strict=False)
 
