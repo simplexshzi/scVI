@@ -117,8 +117,8 @@ class SCANVI(SCVI):
         labels = np.asarray(adata.obs[key]).ravel()
         scvi_labels = get_from_registry(adata, _CONSTANTS.LABELS_KEY).ravel()
         self._label_dict = {s: l for l, s in zip(labels, scvi_labels)}
-        self._unlabeled_indices = np.argwhere(labels == self.unlabeled_category)
-        self._labeled_indices = np.argwhere(labels != self.unlabeled_category)
+        self._unlabeled_indices = np.argwhere(labels == self.unlabeled_category).ravel()
+        self._labeled_indices = np.argwhere(labels != self.unlabeled_category).ravel()
 
         self.is_trained = False
         self.use_cuda = use_cuda and torch.cuda.is_available()
@@ -146,8 +146,8 @@ class SCANVI(SCVI):
                 [round((20000 / self.adata.shape[0]) * 400), 400]
             )
         if n_epochs_semisupervised is None:
-            n_epochs_semisupervised = np.min(
-                [10, np.max([2, round(n_epochs_unsupervised / 3.0)])]
+            n_epochs_semisupervised = int(
+                np.min([10, np.max([2, round(n_epochs_unsupervised / 3.0)])])
             )
 
         self._unsupervised_trainer = UnsupervisedTrainer(
