@@ -115,7 +115,7 @@ class SCANVI(SCVI):
         key = adata.uns["scvi_data_registry"][_CONSTANTS.LABELS_KEY][-1]
         key = key.split("_scvi_")[-1]
         labels = np.asarray(adata.obs[key]).ravel()
-        scvi_labels = get_from_registry(adata, _CONSTANTS.LABELS_KEY)
+        scvi_labels = get_from_registry(adata, _CONSTANTS.LABELS_KEY).ravel()
         self._label_dict = {s: l for l, s in zip(labels, scvi_labels)}
         self._unlabeled_indices = np.argwhere(labels == self.unlabeled_category)
         self._labeled_indices = np.argwhere(labels != self.unlabeled_category)
