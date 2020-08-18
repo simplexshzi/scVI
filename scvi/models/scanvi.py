@@ -4,9 +4,9 @@ import torch
 from anndata import AnnData
 
 from scvi._compat import Literal
+from scvi.models import SCVI
 from scvi.models._modules.vae import VAE
 from scvi.models._modules.scanvae import SCANVAE
-from scvi.models._base import AbstractModelClass
 
 from scvi.inference.inference import UnsupervisedTrainer
 from scvi.inference.annotation import SemiSupervisedTrainer
@@ -15,7 +15,7 @@ from scvi.inference.annotation import AnnotationPosterior
 logger = logging.getLogger(__name__)
 
 
-class SCANVI(AbstractModelClass):
+class SCANVI(SCVI):
     """Single-cell annotation using variational inference [Xu19]_
 
     Inspired from M1 + M2 model, as described in (https://arxiv.org/pdf/1406.5298.pdf).
