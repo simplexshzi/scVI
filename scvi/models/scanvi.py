@@ -180,9 +180,6 @@ class SCANVI(SCVI):
         self.trainer.train(n_epochs=n_epochs_semisupervised)
 
         self.is_trained = True
-        self.train_indices = self.trainer.train_set.indices
-        self.test_indices = self.trainer.test_set.indices
-        self.validation_indices = self.trainer.validation_set.indices
 
     def predict(self, adata=None, indices=None, soft=False):
         """Compute cell label predictions
