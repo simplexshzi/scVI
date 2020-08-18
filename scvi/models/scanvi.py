@@ -3,6 +3,7 @@ import logging
 import torch
 from anndata import AnnData
 
+from typing import Union
 from scvi._compat import Literal
 from scvi.models import SCVI
 from scvi.models._modules.vae import VAE
@@ -11,6 +12,8 @@ from scvi.models._modules.scanvae import SCANVAE
 from scvi.inference.inference import UnsupervisedTrainer
 from scvi.inference.annotation import SemiSupervisedTrainer
 from scvi.inference.annotation import AnnotationPosterior
+from scvi import _CONSTANTS
+from scvi.dataset import get_from_registry
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +27,8 @@ class SCANVI(SCVI):
     ----------
     adata
         AnnData object that has been registered with scvi
+    unlabeled_category
+        Value used for unlabeled cells in `labels_key` used to setup AnnData with scvi
     n_hidden
         Number of nodes per hidden layer
     n_latent
@@ -64,7 +69,7 @@ class SCANVI(SCVI):
     def __init__(
         self,
         adata: AnnData,
-        unlabeled_category: str,
+        unlabeled_category: Union[str, int, float],
         n_hidden: int = 128,
         n_latent: int = 10,
         n_layers: int = 1,
@@ -105,6 +110,16 @@ class SCANVI(SCVI):
             reconstruction_loss=gene_likelihood,
             **model_kwargs,
         )
+
+        # TODO slow, could be a faster way
+        key = adata.uns["scvi_data_registry"][_CONSTANTS.LABELS_KEY][-1]
+        key = key.split("_scvi_")[-1]
+        labels = np.asarray(adata.obs[key]).ravel()
+        scvi_labels = get_from_registry(adata, _CONSTANTS.LABELS_KEY)
+        self._label_dict = {s: l for l, s in zip(labels, scvi_labels)}
+        self._unlabeled_indices = np.argwhere(labels == self.unlabeled_category)
+        self._labeled_indices = np.argwhere(labels != self.unlabeled_category)
+
         self.is_trained = False
         self.use_cuda = use_cuda and torch.cuda.is_available()
         self.batch_size = 128
@@ -151,14 +166,12 @@ class SCANVI(SCVI):
         self.model.load_state_dict(self.trainer.model.state_dict(), strict=False)
 
         self.trainer = SemiSupervisedTrainer(self.model, self.adata)
-        unlabeled_indices = None
-        labeled_indices = None
 
         self.trainer.unlabelled_set = self.trainer.create_posterior(
-            indices=unlabeled_indices
+            indices=self._unlabeled_indices
         )
         self.trainer.labelled_set = self.trainer.create_posterior(
-            indices=labeled_indices
+            indices=self._labeled_indices
         )
         self.trainer.train(n_epochs=n_epochs_semisupervised)
 
@@ -179,8 +192,16 @@ class SCANVI(SCVI):
             TODO
         """
 
+        adata = self.adata if adata is None else adata
         post = self._make_posterior(adata=adata, indices=indices)
 
         _, pred = post.sequential().compute_predictions(soft=soft)
+
+        if not soft:
+            predictions = []
+            for p in pred:
+                predictions.append(self._label_dict[p])
+
+            return np.array(predictions)
 
         return pred
